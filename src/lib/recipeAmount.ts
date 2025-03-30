@@ -58,7 +58,7 @@ function stringifyQty(units: string, amount: number, divisor: number, html : boo
     const remainder = amount % divisor;
     if (remainder) {
         const c = gcd(remainder, divisor);
-        const amt = (whole ? whole.toString() + " " : "") +
+        const amt = (whole ? whole.toString() + (html ? "&nbsp" : " ") : "") +
                     (~~(remainder / c)).toString() + (html ? "&frasl;" : "/") + (~~(divisor / c)).toString();
         return {amt, units, divisor};
     }
@@ -70,4 +70,19 @@ function gcd(a: number, b: number): number {
         return a;
     }
     return gcd(b, a % b);
+}
+
+export function parseAmount(textAmt : string, divisor : number = 1): number {
+    const nums = textAmt.trim().match(/^(?:(\d+)(?:\s+|$))?(?:(\d+)\/(\d+))?$/);
+    let value = 0;
+    if (nums) {
+        if (nums[1]) {
+            value += divisor * ~~nums[1];
+        }
+        if (nums[2]) {
+            value += ~~((divisor * ~~nums[2]) / ~~nums[3]);
+        }
+        return value;
+    }
+    return -1;
 }

@@ -1,8 +1,7 @@
 <script lang="ts">
-    import Collapse from '$lib/Collapse.svelte';
     import { Tooltip, TextField, Card, Icon, Button } from "svelte-ux";
-    import { recipeQty, recipeUnits } from '$lib/recipeAmount.js';
     import { mdiMagnify, mdiPlaylistEdit, mdiPlaylistPlus } from '@mdi/js';
+	import RecipeList from '../RecipeList.svelte';
 
     const { data } = $props();
 
@@ -33,44 +32,34 @@
     // $inspect(searchTerm, filteredRecipes);
 </script>
 
-<h2>Recipes</h2>
-<br />
+<div class="flex justify-between items-center p-4 mb-4">
+    <span class="text-3xl bold underline">Recipes:</span>
+    <Tooltip title="Create New Recipe" placement="top">
+        <Button color="secondary" variant="fill" rounded="full" href="/recipes/new/edit">Create</Button>
+    </Tooltip>
+</div>
+
 <TextField
     label="Search by ingredient"
     labelPlacement="float"
     clearable
     rounded icon={mdiMagnify} bind:value={searchTerm}
 />
-<Card class="mt-2">
-    {#each filteredRecipes as recipe, i}
-        <Collapse bind:group value={recipe.id}>
-            <div slot="action" class="pr-2">
-                <Tooltip title="Add to Menu" placement="top">
-                    <Button icon={mdiPlaylistPlus} onclick={(e: any) => {
-                        alert("Need to implement add-recipe-to-menu");
-                    }} />
-                </Tooltip>
-            </div>
-            <div slot="trigger" class="flex-1 p-0 hover:bg-neutral-700">
-            <span>{recipe.name}</span>
-            </div>
-            <div class="bg-neutral p-2">
-                <span class="underline text-lg font-bold">Ingredients:</span>
-                <div class="table pl-4">
-                {#each recipe.ingredients as ig}
-                    <div class="table-row">
-                        <div class="table-cell text-right">{@html recipeQty(ig.food.domain, ig.amount)}</div>
-                        <div class="table-cell px-3">{recipeUnits(ig.food.domain, ig.amount)}</div>
-                        <div class="table-cell">{ig.food.name}</div>
-                    </div>
-                {/each}
-                </div>
-                <Tooltip title="Edit Recipe" placement="top">
-                    <a href="/recipes/{recipe.id}/edit">
-                        <Icon data={mdiPlaylistEdit} />
-                    </a>
-                </Tooltip>
-            </div>
-        </Collapse>
-    {/each}    
-</Card>
+
+<RecipeList recipeList={filteredRecipes}>
+    {#snippet recipeHeader(recipe: { id: any; })}
+        <Tooltip title="Add to Menu" placement="top">
+            <form method="POST" action="?/addToMenu">
+                <input type=hidden name="recipeId" value={recipe.id} />
+                <Button type="submit" icon={mdiPlaylistPlus} />
+            </form>
+        </Tooltip>
+    {/snippet}
+    {#snippet recipeFooter(recipe: { id: any; })}
+        <Tooltip title="Edit Recipe" placement="top">
+            <a href="/recipes/{recipe.id}/edit">
+                <Icon data={mdiPlaylistEdit} />
+            </a>
+        </Tooltip>
+    {/snippet}
+</RecipeList>

@@ -3,13 +3,13 @@ import { recipes, foods } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function load ({params}) {
-    const qid = params.id;
+    const qid = isNaN(Number(params.id)) ? -1 : Number(params.id);
     const recipeQuery = await db.query.recipes.findFirst({
         with: {
             ingredients: {
                 with: { food: true }}},
-                where: eq(recipes.id, Number(qid))});
-    const recipe = recipeQuery ?? {} as NonNullable<typeof recipeQuery>;
+                where: eq(recipes.id, qid)});
+    const recipe = recipeQuery ?? {ingredients:[]} as NonNullable<typeof recipeQuery>;
     const foodSelect = await db.select({
         value: foods.id,
         label: foods.name,
@@ -19,8 +19,16 @@ export async function load ({params}) {
 }
 
 export const actions = {
-    edit: async ({request}) => {
+    addfood: async ({request}) => {
         const data = await request.formData();
-        console.log("Form data:", data);
+        const insertedFoods = await db.insert(foods).values({
+            name: data.get("name") as string,
+            domain: data.get("domain") as string
+        }).returning();
+        return {
+            value: insertedFoods[0].id,
+            label: insertedFoods[0].name,
+            domain: insertedFoods[0].domain
+        };
     }
 }
