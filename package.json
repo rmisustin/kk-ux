@@ -37,7 +37,7 @@
 		"drizzle-orm": "^0.41.0",
 		"lucide-svelte": "^0.487.0",
 		"svelte-dnd-action": "^0.9.60",
-		"svelte-ux": "^0.76.0",
+		"svelte-ux": "^0.90.5",
 		"sveltekit-superforms": "^2.24.0"
 	}
 }
