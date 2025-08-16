@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
-import { menu } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { menu, inventory } from '$lib/server/db/schema';
+import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { fail, message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -9,10 +9,11 @@ const rmMenuSchema = z.object({
     menuId: z.number().positive(),
 });
 const addInventorySchema = z.object({
-    quantity: z.number().positive(),
-    divisor: z.number().positive(),
-    location: z.number().positive(),
-    expires: z.string().date(),
+    foodId: z.coerce.number().positive(),
+    quantity: z.coerce.number().positive(),
+    divisor: z.coerce.number().positive(),
+    location: z.coerce.number().positive(),
+    expires: z.string().optional(),
 });
 
 export async function load ({url}) {
@@ -50,7 +51,21 @@ export const actions = {
         return message(rmMenuForm, 'Menu Item removed');
     },
     addToInventory: async ({request}) => {
-        const data = await request.formData();
-        console.log("addToInventory:", data);
+        const addInventoryForm = await superValidate(request, zod(addInventorySchema));
+        if (!addInventoryForm.valid) return fail(400, { addInventoryForm });
+        const { foodId, quantity, divisor, location, expires } = addInventoryForm.data;
+        const amount = quantity * divisor;
+        await db.insert(inventory).values({
+            foodId,
+            locationId: location,
+            amount,
+            expires
+        }).onConflictDoUpdate({
+            target: [inventory.foodId, inventory.locationId],
+            set: {
+                amount: sql`${inventory.amount} + ${amount}`
+            }
+        });
+        return message(addInventoryForm, "Added to inventory");
     }
 };

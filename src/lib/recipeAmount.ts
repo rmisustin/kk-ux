@@ -16,7 +16,8 @@ const unitDescMap = new Map<string, UnitDesc[]>([
         {label: 'quart',  divisor: 24 * 3 * 16 * 4,  min: 24 * 3 * 16 * 4},
         {label: 'cup',    divisor: 24 * 3 * 16,      min: 24 * 3 * 4}, // 1/4 cup!
         {label: 'tbsp',   divisor: 24 * 3,           min: 24 * 3},
-        {label: 'tsp',    divisor: 24,               min: 0}
+        {label: 'tsp',    divisor: 24,               min: 0},
+        {label: 'fl oz',  divisor: 24 * 3 * 2,       min: 0},
     ]],
     ['W', [
         {label: 'lb',     divisor: 8 * 16,           min: 8 * 16},
